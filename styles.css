@@ -1,3 +1,47 @@
+#overlay {
+    position: fixed; /* Sit on top of the page content */
+    display: none; /* Hidden by default */
+    width: 100%; /* Full width (cover the whole page) */
+    height: 100%; /* Full height (cover the whole page) */
+    top: 0; 
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.719); /* Black background with opacity */
+    z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+    cursor: pointer; /* Add a pointer on hover */
+}
+
+#text{
+    position: absolute;
+    top: 350px;
+    left: 320px;
+    font-size: 50px;
+    color: white;
+    transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+}
+
+#saveBtn {
+    position: absolute;
+    top: 400px;
+    left: 230px;
+    width: 70px;
+    height: 30px;
+    color: white;
+    background-color: red;
+}
+
+#loadBtn {
+    position: absolute;
+    top: 400px;
+    left: 325px;
+    width: 70px;
+    height: 30px;
+    color: white;
+    background-color: green;
+}
+
 #gameWorld {
     position:absolute;
     border: 3px double rgb(255, 255, 255);

@@ -1,5 +1,16 @@
 // GameBoard code below
 
+var socket = io.connect("http://24.16.255.56:8888");
+
+// socket.on("load", function (data) {
+//     console.log(data);
+// });
+
+// socket.emit("save", { studentname: "Chris Marriott", statename: "aState", data: "Goodbye World" });
+// socket.emit("load", { studentname: "Chris Marriott", statename: "aState" });
+// socket.emit("load", { studentname: "Chris Marriott", statename: "theState" });
+
+
 function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
 }
@@ -13,6 +24,7 @@ function distance(a, b) {
 function Circle(game) {
     this.player = 1;
     this.radius = 20;
+    this.type = 'defender';
     this.visualRadius = 500;
     this.colors = ["Red", "Green", "Blue", "Yellow", "OrangeRed", "Purple"];
     this.setNotIt();
@@ -126,6 +138,7 @@ Circle.prototype.draw = function (ctx) {
 function Attacker(game) {
     this.player = 1;
     this.radius = 20;
+    this.type = 'attacker';
     this.visualRadius = 500;
     this.colors = ["Red", "Blue", "Yellow"];
     this.setNotIt();
@@ -284,6 +297,15 @@ ASSET_MANAGER.downloadAll(function () {
     var canvas = document.getElementById('gameWorld');
     var ctx = canvas.getContext('2d');
 
+    socket.on("connect", function () {
+        console.log("Socket connected.")
+    });
+    socket.on("disconnect", function () {
+        console.log("Socket disconnected.")
+    });
+    socket.on("reconnect", function () {
+        console.log("Socket reconnected.")
+    });
 
     var gameEngine = new GameEngine();
 

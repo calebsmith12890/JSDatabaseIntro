@@ -44,6 +44,7 @@ function GameEngine() {
     this.paused = false;
     this.auto = true;
     this.angle = 0;
+    this.data = null;
 
     this.b1X = 290;
     this.b1Y = 500;
@@ -81,6 +82,10 @@ GameEngine.prototype.start = function () {
 GameEngine.prototype.startInput = function () {
     console.log('Starting input');
     var that = this;
+    var save = document.getElementById("saveBtn");
+    var load = document.getElementById("loadBtn");
+    var paused = document.getElementById("overlay");
+
 
     var getXandY = function (e) {
         var x = e.clientX - that.ctx.canvas.getBoundingClientRect().left;
@@ -116,11 +121,116 @@ GameEngine.prototype.startInput = function () {
 
     this.ctx.canvas.addEventListener("keydown", function (e) {
         if (e.which === 65) that.auto = !that.auto;
-        if (e.which === 80) that.paused = !that.paused;
+        if (e.which === 80) that.togglePause();
         e.preventDefault();
-    }, false);    
+    }, false);
+
+    paused.addEventListener("keydown", function (e) {
+        if (e.which === 80) that.togglePause();
+        e.preventDefault();
+    }, false);
+
+    save.addEventListener("click", function(e){
+        that.saveData();
+    }, false);
+
+    load.addEventListener("click", function(e){
+        socket.emit("load", { studentname: "Caleb Smith", statename: "orbState" });
+    }, false);
+
+    socket.on("load", function (loaded) {
+        console.log(loaded);
+        that.loadData(loaded.data);
+    });
 
     console.log('Input started');
+}
+
+GameEngine.prototype.togglePause = function() {
+
+    this.paused = !this.paused;
+    if (this.paused) {
+        // console.log('PAUSED');
+        document.getElementById("overlay").style.display = "block";
+    } else {
+        document.getElementById("overlay").style.display = "none";
+    }
+}
+
+GameEngine.prototype.saveData = function() {
+
+    console.log('SAVE');
+
+    var defendersL = [];
+    var attackersL = [];
+
+    for (var i = 0; i < this.entities.length; i++) {
+        x = this.entities[i].x;
+        y = this.entities[i].y;
+        t = this.entities[i].type;
+        c = this.entities[i].color;
+        v = this.entities[i].velocity;
+        data = {x: x, y: y, type: t, color: c, velocity: v}
+
+        defendersL.push(data);
+    }
+
+    for (var i = 0; i < this.attackers.length; i++) {
+        x = this.attackers[i].x;
+        y = this.attackers[i].y;
+        c = this.attackers[i].color;
+        v = this.attackers[i].velocity;
+        data = {x: x, y: y, type: t, color: c, velocity: v, p: i}
+
+        attackersL.push(data);
+    }
+
+    var data = {barrel: {angle: this.angle, velocity: this.bV}, 
+                         attackers: attackersL, defenders: defendersL};
+    // console.log(data);
+
+    socket.emit("save", { studentname: "Caleb Smith", statename: "orbState", data: data });
+    this.data = data;
+}
+
+GameEngine.prototype.loadData = function(data) {
+    // var data = this.data;
+    
+    console.log('LOAD');
+
+    this.angle = data.barrel.angle;
+    this.bV = data.barrel.velocity;
+
+    this.entities = [];
+    for (var i = 0; i < data.defenders.length; i++) {
+        if (data.defenders[i].type === 'defender') {
+            circle = new Circle(this);
+            circle.x = data.defenders[i].x;
+            circle.y = data.defenders[i].y;
+            circle.color = data.defenders[i].color;
+            circle.velocity = data.defenders[i].velocity;
+            this.addEntity(circle);
+        } else {
+            atk = new Attacker(this);
+            atk.x = data.defenders[i].x;
+            atk.y = data.defenders[i].y;
+            atk.color = data.defenders[i].color;
+            atk.velocity = data.defenders[i].velocity;
+            this.addEntity(atk);
+        }
+    }
+
+    for (var i = 0; i < data.attackers.length; i++) {
+        atk = new Attacker(this);
+        atk.x = data.attackers[i].x;
+        atk.y = data.attackers[i].y;
+        atk.color = data.attackers[i].color;
+        atk.velocity = data.attackers[i].velocity;
+        this.attackers[data.attackers[i].p] = atk;
+    }
+
+    this.draw();
+    this.rotateCannon(this.angle);
 }
 
 GameEngine.prototype.stockDefenders = function () {
